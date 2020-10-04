@@ -19,6 +19,12 @@ public class Student {
         this.lastname=lastname;
         this.attendance=attendance;
     }
+    public Student(String id, String name, String lastname, boolean attendance){
+        this.id = id;
+        this.name= name;
+        this.lastname=lastname;
+        this.attendance=attendance;
+    }
 
     //Getters
     public String getId(){
