@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 @RequestMapping("/api")
 public class StudentController {
@@ -33,65 +33,69 @@ public class StudentController {
     @Autowired
     private StudentRepository studentRepository;
 
+    //Traer todos los estudiantes
     @GetMapping("/students")
-    public ResponseEntity<List<Student>> allStudents(){
+    public ResponseEntity<List<Student>> getAllStudents()  {
         List<Student> studentList = studentRepository.findAll();
-        
+                
         if(studentList.isEmpty()){
             return ResponseEntity.notFound().build();
         }
-
+        
         System.out.println(studentList);
         return ResponseEntity.ok(studentList);
     }
 
-    @GetMapping("/student/{id}")
-    public ResponseEntity<Student> getStudentById(@PathVariable("id") String id) {
+    //Traer un estudiante por la id
+    @GetMapping("/student")
+    public ResponseEntity<Student> getStudent(@RequestParam(name = "id") String id)  {
         Optional<Student> studentData = studentRepository.findById(id);
 
         if (studentData.isPresent()) {
             return new ResponseEntity<>(studentData.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+           return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    //Crear un nuevo estudiante
     @PostMapping("/student")
-    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
+    public ResponseEntity<Student> createStudent(@RequestBody Student student)  {
         try {
             Student newStudent = new Student(student.getName(), student.getLastname(), student.getAttendance());
             studentRepository.save(newStudent);
             System.out.println(newStudent);
-            
+                    
             return new ResponseEntity<>(newStudent, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    //Actualizar un estudiante
+    @PutMapping("/student")
+    public ResponseEntity<Student> updateStudent(@RequestBody Student student, @RequestParam(name = "id") String id)  {
+        Optional<Student> foundStudent = studentRepository.findById(id);
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<?> updateStudent(@RequestBody Student student, @PathParam(value = "id") String id)  {
-
-        Optional<Student> studentData = studentRepository.findById(id);
-
-        if(studentData.isEmpty()){
+        if (!foundStudent.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         Student studentUpdated = new Student(id, student.getName(), student.getLastname(), student.getAttendance());
         studentRepository.save(studentUpdated);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(studentUpdated, HttpStatus.OK);
     }
-
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteStudent(@PathParam(value = "id") String id)  {
+      
+    //Eliminar estudiante por id
+    @DeleteMapping("/student")
+    public ResponseEntity<?> stuff4(@RequestParam(name = "id") String id)  {
         if(id.isEmpty()){
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.notFound().build();
         }
         studentRepository.deleteById(id);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>("User " + id + " deleted",HttpStatus.OK);
     }
+
 
 }
